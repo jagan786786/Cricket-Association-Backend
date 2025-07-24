@@ -3,6 +3,7 @@ const router = express.Router();
 const categoryController = require("../controllers/category.controllers");
 const moduleController = require("../controllers/module.controllers");
 const menuItemController = require("../controllers/menuitems.controllers");
+const tournamentController = require('../controllers/tournament.controllers');
 
 // Menu Item Routes
 router.get("/menuitems", menuItemController.getAllMenuItems);
@@ -23,5 +24,16 @@ router.put('/module/:id', moduleController.updateModule);
 router.delete('/module/:id', moduleController.deleteModule);
 router.get('/modules', moduleController.getAllModules);
 router.get('/modules/category/:categoryId', moduleController.getModulesByCategory);
+router.get('/modules/menuItem/:menuItemId', moduleController.getModulesByMenuItem);
+
+
+
+router.post('/tournament', tournamentController.createTournament);
+router.put('/tournaments/:id', tournamentController.updateTournament);
+router.delete('/tournaments/:id', tournamentController.deleteTournament);
+router.get('/tournaments', tournamentController.getAllTournaments);
+router.get('/tournaments/category/:categoryId', tournamentController.getTournamentsByCategory);
+router.get('/tournaments/menuItem/:menuItemId', tournamentController.getTournamentsByMenuItem);
+
 
 module.exports = router;

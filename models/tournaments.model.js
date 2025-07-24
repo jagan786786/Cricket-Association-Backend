@@ -1,2 +1,25 @@
-const mongoose =  require('mongoose');
+// models/Tournament.js
+const mongoose = require('mongoose');
 
+const tournamentSchema = new mongoose.Schema({
+  menuItem: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Menuitems',
+    required: true,
+  },
+  category: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Category',
+    required: true,
+  },
+  name: { type: String, required: true },
+  description: { type: String, required: true },
+  date: { type: Date, required: true },
+  format:{type:String,required:true},
+  teams: { type: Number, required: true },
+  location:{type:String,required:true},
+  entryFee: { type: Number, required: true },
+  prizePool: { type: Number },
+});
+
+module.exports = mongoose.model('Tournament', tournamentSchema);

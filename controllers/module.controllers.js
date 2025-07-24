@@ -1,117 +1,208 @@
-const Module = require('../models/module.model');
-const Category = require('../models/category.model');
+const mongoose = require("mongoose");
+const Module = require("../models/module.model");
+const Category = require("../models/category.model");
+const Menuitems = require("../models/menuitems.model");
 
-exports.createModule = async (req, res) => {
+const createModule = async (req, res) => {
+  const {
+    menuItem,
+    category,
+    name,
+    description,
+    price,
+    duration,
+    features,
+    isPopular,
+  } = req.body;
+
+  console.log("Received payload:", req.body);
+
+  if (
+    !menuItem ||
+    !category ||
+    !name ||
+    !description ||
+    !price ||
+    !duration ||
+    !features ||
+    features.length < 3
+  ) {
+    return res.status(400).json({
+      message:
+        "Please fill all required fields and provide at least 3 features.",
+    });
+  }
+
   try {
-    const {
+    if (!mongoose.Types.ObjectId.isValid(menuItem)) {
+      return res.status(400).json({ message: "Invalid menuItem ID" });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(category)) {
+      return res.status(400).json({ message: "Invalid category ID" });
+    }
+
+    const menuItemExists = await Menuitems.findById(menuItem);
+    if (!menuItemExists) {
+      return res.status(404).json({ message: "Menu item not found" });
+    }
+
+    const categoryExists = await Category.findById(category);
+    if (!categoryExists) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+
+    const newModule = new Module({
+      menuItem,
       category,
       name,
       description,
       price,
       duration,
-      skills,
-      isPopular,
-    } = req.body;
-
-    if (
-      !category || !name || !description || !price ||
-      !duration || !skills || skills.length < 3
-    ) {
-      return res.status(400).json({ message: 'Please fill all required fields and at least 3 skills' });
-    }
-
-    // Validate category exists
-    const existingCategory = await Category.findById(category);
-    if (!existingCategory) {
-      return res.status(404).json({ message: 'Category not found' });
-    }
-
-    const module = new Module({
-      category,
-      name,
-      description,
-      price,
-      duration,
-      skills,
+      features,
       isPopular,
     });
 
-    await module.save();
-    res.status(201).json({ message: 'Module created successfully', module });
+    const savedModule = await newModule.save();
+    res.status(201).json({
+      message: "Module created successfully",
+      module: savedModule,
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Error creating module', error: error.message });
+    console.error("Error creating module:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
-exports.updateModule = async (req, res) => {
+const updateModule = async (req, res) => {
   try {
     const moduleId = req.params.id;
     const {
+      menuItem,
       category,
       name,
       description,
       price,
       duration,
-      skills,
+      features,
       isPopular,
     } = req.body;
 
-    if (skills && (skills.length < 3 || skills.length > 5)) {
-      return res.status(400).json({ message: 'Skills must contain 3–5 items' });
+    if (features && (features.length < 3 || features.length > 5)) {
+      return res
+        .status(400)
+        .json({ message: "features must contain 3–5 items" });
+    }
+
+    if (menuItem && category) {
+      const menuItemExists = await Menuitems.findById(menuItem);
+      if (!menuItemExists) {
+        return res.status(404).json({ message: "Menu item not found" });
+      }
+
+      const categoryExists = await Category.findById(category);
+      if (!categoryExists) {
+        return res.status(404).json({ message: "Category not found" });
+      }
+
+      if (categoryExists.menuItem.toString() !== menuItem) {
+        return res.status(400).json({
+          message: "Category does not belong to the specified menu item",
+        });
+      }
     }
 
     const updatedModule = await Module.findByIdAndUpdate(
       moduleId,
       {
+        menuItem,
         category,
         name,
         description,
         price,
         duration,
-        skills,
+        features,
         isPopular,
       },
       { new: true, runValidators: true }
     );
 
     if (!updatedModule) {
-      return res.status(404).json({ message: 'Module not found' });
+      return res.status(404).json({ message: "Module not found" });
     }
 
-    res.json({ message: 'Module updated', module: updatedModule });
+    res.json({ message: "Module updated successfully", module: updatedModule });
   } catch (error) {
-    res.status(500).json({ message: 'Error updating module', error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error updating module", error: error.message });
   }
 };
 
-exports.deleteModule = async (req, res) => {
+const deleteModule = async (req, res) => {
   try {
     const moduleId = req.params.id;
     const deleted = await Module.findByIdAndDelete(moduleId);
     if (!deleted) {
-      return res.status(404).json({ message: 'Module not found' });
+      return res.status(404).json({ message: "Module not found" });
     }
-    res.json({ message: 'Module deleted successfully' });
+    res.json({ message: "Module deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: 'Error deleting module', error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error deleting module", error: error.message });
   }
 };
 
-exports.getAllModules = async (req, res) => {
+const getAllModules = async (req, res) => {
   try {
-    const modules = await Module.find().populate('category', 'name');
+    const modules = await Module.find().populate("category", "name");
     res.json({ modules });
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching modules', error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error fetching modules", error: error.message });
   }
 };
 
-exports.getModulesByCategory = async (req, res) => {
+const getModulesByCategory = async (req, res) => {
   try {
     const categoryId = req.params.categoryId;
-    const modules = await Module.find({ category: categoryId }).populate('category', 'name');
+    const modules = await Module.find({ category: categoryId }).populate(
+      "category",
+      "name"
+    );
     res.json({ modules });
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching modules by category', error: error.message });
+    res.status(500).json({
+      message: "Error fetching modules by category",
+      error: error.message,
+    });
   }
+};
+
+const getModulesByMenuItem = async (req, res) => {
+  try {
+    const menuItemId = req.params.menuItemId;
+
+    const modules = await Module.find({ menuItem: menuItemId })
+      .populate("menuItem", "name")
+      .populate("category", "name");
+
+    res.status(200).json({ modules });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error fetching modules by menu item",
+      error: error.message,
+    });
+  }
+};
+
+module.exports = {
+  createModule,
+  updateModule,
+  deleteModule,
+  getAllModules,
+  getModulesByCategory,
+  getModulesByMenuItem,
 };
