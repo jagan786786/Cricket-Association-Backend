@@ -13,7 +13,7 @@ router.put("/menuitem/:id", menuItemController.updateMenuItem);
 router.get("/categories", categoryController.getAllCategories);
 router.post("/category", categoryController.createCategory);
 router.put("/category/:id", categoryController.updateCategory);
-router.get('/menuItem/:menuItemId', categoryController.getCategoriesByMenuItem);
+router.get('/categories/menuItem/:menuItemId', categoryController.getCategoriesByMenuItem);
 router.delete("/category/:id", categoryController.deleteCategory);
 router.patch("/category/:id/toggle-active", categoryController.toggleCategoryActive);
 

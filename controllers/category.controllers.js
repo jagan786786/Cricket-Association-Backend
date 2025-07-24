@@ -1,10 +1,11 @@
+const mongoose = require("mongoose");
 const Category = require("../models/category.model");
+const Menuitems = require("../models/menuitems.model");
 
 // Create a Category
-// category.controller.js
 exports.createCategory = async (req, res) => {
   try {
-    const { name, menuItemId } = req.body;
+    const { name, menuItemId, icon } = req.body;
 
     if (!name?.trim()) {
       return res.status(400).json({ message: "Category name cannot be empty" });
@@ -12,6 +13,11 @@ exports.createCategory = async (req, res) => {
 
     if (!menuItemId) {
       return res.status(400).json({ message: "Menu item ID is required" });
+    }
+
+    // ✅ Validate menuItemId format
+    if (!mongoose.Types.ObjectId.isValid(menuItemId)) {
+      return res.status(400).json({ message: "Invalid menuItemId" });
     }
 
     const menuItemExists = await Menuitems.findById(menuItemId);
@@ -28,21 +34,28 @@ exports.createCategory = async (req, res) => {
       name: name.trim(),
       active: activeCount < 4,
       menuItem: menuItemId,
+      icon: icon?.trim() || null,
     });
 
     await category.save();
-    res.status(201).json({ message: "Category created", category });
+
+    res.status(201).json({
+      message: "Category created",
+      category,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error creating category", error: error.message });
+    console.error("Error creating category:", error); // ✅ Always log internal errors
+    res.status(500).json({
+      message: "Error creating category",
+      error: error.message,
+    });
   }
 };
 
 // Get All Categories
 exports.getAllCategories = async (req, res) => {
   try {
-    const categories = await Category.find();
+    const categories = await Category.find().populate("menuItem");
     res.status(200).json({ categories });
   } catch (error) {
     res
@@ -51,17 +64,24 @@ exports.getAllCategories = async (req, res) => {
   }
 };
 
-// Update a Category Name
+// Update a Category (name or icon)
 exports.updateCategory = async (req, res) => {
   try {
-    const { name } = req.body;
+    const { name, icon } = req.body;
+
+    const updateFields = {};
+    if (name) updateFields.name = name.trim();
+    if (icon) updateFields.icon = icon.trim();
+
     const updated = await Category.findByIdAndUpdate(
       req.params.id,
-      { name },
+      updateFields,
       { new: true }
     );
+
     if (!updated)
       return res.status(404).json({ message: "Category not found" });
+
     res.json({ message: "Category updated", category: updated });
   } catch (error) {
     res
@@ -92,16 +112,21 @@ exports.toggleCategoryActive = async (req, res) => {
       return res.status(404).json({ message: "Category not found" });
 
     if (!category.active) {
-      const activeCount = await Category.countDocuments({ active: true });
+      const activeCount = await Category.countDocuments({
+        active: true,
+        menuItem: category.menuItem, // ✅ correct field
+      });
+
       if (activeCount >= 4) {
-        return res
-          .status(400)
-          .json({ message: "Only 4 categories can be active at a time" });
+        return res.status(400).json({
+          message: "Only 4 active categories allowed for this menu item.",
+        });
       }
     }
 
     category.active = !category.active;
     await category.save();
+
     res.json({
       message: `Category ${category.active ? "activated" : "deactivated"}`,
       category,
@@ -114,12 +139,16 @@ exports.toggleCategoryActive = async (req, res) => {
   }
 };
 
-//get categories by menu item
 exports.getCategoriesByMenuItem = async (req, res) => {
   try {
-    const categories = await Category.find({ menuItem: req.params.menuItemId });
+    const categories = await Category.find({
+      menuItem: req.params.menuItemId,
+    }).sort({ createdAt: 1 }); // optional: ensure consistent order
+
     res.status(200).json({ categories });
   } catch (error) {
-    res.status(500).json({ message: "Error fetching categories", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error fetching categories", error: error.message });
   }
 };

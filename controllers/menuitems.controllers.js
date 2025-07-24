@@ -1,23 +1,26 @@
 const Menuitems = require("../models/menuitems.model");
 
 exports.createMenuItem = async (req, res) => {
-    try{
-        const {name} = req.body;
-        if(!name?.trim()){
-            return res.status(400).json({ message: "Menu item name cannot be empty" });
+    try {
+        const { name, icon } = req.body;
+
+        if (!name?.trim() || !icon?.trim()) {
+            return res.status(400).json({ message: "Name and icon are required" });
         }
 
         const menuItem = new Menuitems({
-            name: name.trim()
+            name: name.trim(),
+            icon: icon.trim(),
         });
 
         await menuItem.save();
         res.status(201).json({ message: "Menu item created", menuItem });
 
-    }catch(err){
-        res.status(500).json({ message: "Error creating menuitems", error: error.message });
+    } catch (error) {
+        res.status(500).json({ message: "Error creating menu item", error: error.message });
     }
 };
+
 
 exports.getAllMenuItems = async (req, res) => {
     try {
@@ -28,17 +31,33 @@ exports.getAllMenuItems = async (req, res) => {
     }
 }
 
-exports.updateMenuItem = async(req, res) => {
+exports.updateMenuItem = async (req, res) => {
     try {
-        const { name } = req.body;
+        const { name, icon } = req.body;
+
         const updated = await Menuitems.findByIdAndUpdate(
             req.params.id,
-            { name },
+            { name, icon },
             { new: true }
         );
+
         if (!updated) return res.status(404).json({ message: "Menu item not found" });
+
         res.json({ message: "Menu item updated", menuItem: updated });
     } catch (error) {
         res.status(500).json({ message: "Error updating menu item", error: error.message });
     }
-}
+};
+
+
+exports.getMenuItemById = async (req, res) => {
+  try {
+    const menuItem = await Menuitems.findById(req.params.id);
+    if (!menuItem) {
+      return res.status(404).json({ message: "Menu item not found" });
+    }
+    res.status(200).json({ menuItem });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching menu item", error: error.message });
+  }
+};
