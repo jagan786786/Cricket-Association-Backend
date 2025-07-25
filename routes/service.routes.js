@@ -25,15 +25,17 @@ router.delete('/module/:id', moduleController.deleteModule);
 router.get('/modules', moduleController.getAllModules);
 router.get('/modules/category/:categoryId', moduleController.getModulesByCategory);
 router.get('/modules/menuItem/:menuItemId', moduleController.getModulesByMenuItem);
+router.patch("/module/:id/toggle-active", moduleController.toggleModuleActive);
 
 
-
+// Tournament Routes
 router.post('/tournament', tournamentController.createTournament);
 router.put('/tournaments/:id', tournamentController.updateTournament);
 router.delete('/tournaments/:id', tournamentController.deleteTournament);
 router.get('/tournaments', tournamentController.getAllTournaments);
 router.get('/tournaments/category/:categoryId', tournamentController.getTournamentsByCategory);
 router.get('/tournaments/menuItem/:menuItemId', tournamentController.getTournamentsByMenuItem);
+router.patch("/tournament/:id/toggle-active", tournamentController.toggleTournamentActive);
 
 
 module.exports = router;

@@ -16,6 +16,8 @@ exports.createTournament = async (req, res) => {
       location,
       entryFee,
       prizePool,
+      active = true,
+      mapurl,
     } = req.body;
 
     if (
@@ -45,11 +47,9 @@ exports.createTournament = async (req, res) => {
     }
 
     if (categoryExists.menuItem.toString() !== menuItem) {
-      return res
-        .status(400)
-        .json({
-          message: "Category does not belong to the specified menu item",
-        });
+      return res.status(400).json({
+        message: "Category does not belong to the specified menu item",
+      });
     }
 
     const tournament = new Tournament({
@@ -63,6 +63,8 @@ exports.createTournament = async (req, res) => {
       location,
       entryFee,
       prizePool,
+      active,
+      mapurl,
     });
 
     await tournament.save();
@@ -91,6 +93,8 @@ exports.updateTournament = async (req, res) => {
       location,
       entryFee,
       prizePool,
+      active,
+      mapurl,
     } = req.body;
 
     if (menuItem && category) {
@@ -103,11 +107,9 @@ exports.updateTournament = async (req, res) => {
         return res.status(404).json({ message: "Category not found" });
 
       if (categoryExists.menuItem.toString() !== menuItem)
-        return res
-          .status(400)
-          .json({
-            message: "Category does not belong to the specified menu item",
-          });
+        return res.status(400).json({
+          message: "Category does not belong to the specified menu item",
+        });
     }
 
     const updatedTournament = await Tournament.findByIdAndUpdate(
@@ -123,6 +125,7 @@ exports.updateTournament = async (req, res) => {
         location,
         entryFee,
         prizePool,
+        mapurl,
       },
       { new: true, runValidators: true }
     );
@@ -180,12 +183,10 @@ exports.getTournamentsByCategory = async (req, res) => {
     }).populate("category", "name");
     res.json({ tournaments });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "Error fetching tournaments by category",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Error fetching tournaments by category",
+      error: error.message,
+    });
   }
 };
 
@@ -199,11 +200,32 @@ exports.getTournamentsByMenuItem = async (req, res) => {
 
     res.status(200).json({ tournaments });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "Error fetching tournaments by menu item",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Error fetching tournaments by menu item",
+      error: error.message,
+    });
   }
 };
+
+exports.toggleTournamentActive = async (req, res) => {
+  try {
+    const tournamentId = req.params.id;
+    const tournament = await Tournament.findById(tournamentId);
+
+    if (!tournament) {
+      return res.status(404).json({ message: "Tournament not found" });
+    }
+
+    tournament.active = !tournament.active;
+    await tournament.save();
+
+    res.json({
+      message: `Tournament is now ${tournament.active ? "active" : "inactive"}`,
+      tournament,
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error toggling tournament active status", error: error.message });
+  }
+}

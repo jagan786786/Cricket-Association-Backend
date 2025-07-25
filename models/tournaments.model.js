@@ -20,6 +20,8 @@ const tournamentSchema = new mongoose.Schema({
   location:{type:String,required:true},
   entryFee: { type: Number, required: true },
   prizePool: { type: Number },
+  active: { type: Boolean, default: true },
+  mapurl:{type:String,required:true},
 });
 
 module.exports = mongoose.model('Tournament', tournamentSchema);

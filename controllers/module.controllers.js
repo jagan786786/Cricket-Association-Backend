@@ -13,6 +13,7 @@ const createModule = async (req, res) => {
     duration,
     features,
     isPopular,
+    active = true,
   } = req.body;
 
   console.log("Received payload:", req.body);
@@ -61,6 +62,7 @@ const createModule = async (req, res) => {
       duration,
       features,
       isPopular,
+      active,
     });
 
     const savedModule = await newModule.save();
@@ -86,6 +88,7 @@ const updateModule = async (req, res) => {
       duration,
       features,
       isPopular,
+      active,
     } = req.body;
 
     if (features && (features.length < 3 || features.length > 5)) {
@@ -123,6 +126,7 @@ const updateModule = async (req, res) => {
         duration,
         features,
         isPopular,
+        active,
       },
       { new: true, runValidators: true }
     );
@@ -198,6 +202,30 @@ const getModulesByMenuItem = async (req, res) => {
   }
 };
 
+const toggleModuleActive = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const module = await Module.findById(id);
+    if (!module) {
+      return res.status(404).json({ message: "Module not found" });
+    }
+
+    module.active = !module.active;
+    await module.save();
+
+    res.status(200).json({
+      message: `Module ${module.active ? "activated" : "deactivated"} successfully`,
+      active: module.active,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error toggling module active status",
+      error: error.message,
+    });
+  }
+};
+
+
 module.exports = {
   createModule,
   updateModule,
@@ -205,4 +233,7 @@ module.exports = {
   getAllModules,
   getModulesByCategory,
   getModulesByMenuItem,
+  toggleModuleActive,
 };
+
+

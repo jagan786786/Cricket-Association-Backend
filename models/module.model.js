@@ -26,6 +26,7 @@ const moduleSchema = new mongoose.Schema({
     },
   },
   isPopular: { type: Boolean, default: false },
+  active: { type: Boolean, default: true },
 });
 
 module.exports = mongoose.model("Module", moduleSchema);
