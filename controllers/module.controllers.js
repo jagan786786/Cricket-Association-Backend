@@ -172,7 +172,7 @@ const getAllModules = async (req, res) => {
 const getModulesByCategory = async (req, res) => {
   try {
     const categoryId = req.params.categoryId;
-    const modules = await Module.find({ category: categoryId }).populate(
+    const modules = await Module.find({ category: categoryId,active:true }).populate(
       "category",
       "name"
     );

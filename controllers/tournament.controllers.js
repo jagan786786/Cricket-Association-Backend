@@ -180,6 +180,7 @@ exports.getTournamentsByCategory = async (req, res) => {
     const categoryId = req.params.categoryId;
     const tournaments = await Tournament.find({
       category: categoryId,
+      active: true,
     }).populate("category", "name");
     res.json({ tournaments });
   } catch (error) {
