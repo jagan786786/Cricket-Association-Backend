@@ -46,5 +46,7 @@ router.put("/form/:id", formController.updateForm);
 router.patch("/form/:id/activate", formController.toggleFormActive);
 router.post("/form-field", formController.createFormField);
 router.post("/form-validation", formController.createValidation);
+router.get("/forms", formController.getAllForms);
+router.get("/form/:id", formController.getFormById);
 
 module.exports = router;

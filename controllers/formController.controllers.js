@@ -230,3 +230,28 @@ exports.getFormFieldById = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
+exports.getFormById = async (req, res) => {
+  try {
+    const form = await FormSchema.findById(req.params.id).populate("fields");
+    if (!form) return res.status(404).json({ error: "Form not found" });
+
+    console.log("Submit Button:", form.submitButton); // 👈 debug log
+
+    res.json(form);
+  } catch (err) {
+    console.error("Get Form Error:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+// Add in formController.controllers.js
+exports.getAllForms = async (req, res) => {
+  try {
+    const forms = await FormLink.find().populate("formId");
+    res.json(forms);
+  } catch (error) {
+    console.error("Fetch All Forms Error:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
