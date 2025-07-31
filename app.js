@@ -6,7 +6,7 @@ const app = express();
 const cookieParser = require('cookie-parser');
 const connectToDb = require('./db/db');
 const playerRoutes = require('./routes/player.routes');
-const categoryRoutes = require('./routes/service.routes');
+const serviceRoutes = require('./routes/service.routes');
 
 connectToDb();
 
@@ -15,14 +15,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-
-
 app.get('/', (req, res) => {
     res.send('Hello World');
 });
 
 app.use('/api', playerRoutes);
-app.use('/api',categoryRoutes);
+app.use('/api',serviceRoutes);
 
 
 module.exports = app;

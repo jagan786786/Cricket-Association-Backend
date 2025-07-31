@@ -4,6 +4,8 @@ const categoryController = require("../controllers/category.controllers");
 const moduleController = require("../controllers/module.controllers");
 const menuItemController = require("../controllers/menuitems.controllers");
 const tournamentController = require('../controllers/tournament.controllers');
+const formController = require("../controllers/formController.controllers");
+
 
 // Menu Item Routes
 router.get("/menuitems", menuItemController.getAllMenuItems);
@@ -37,5 +39,12 @@ router.get('/tournaments/category/:categoryId', tournamentController.getTourname
 router.get('/tournaments/menuItem/:menuItemId', tournamentController.getTournamentsByMenuItem);
 router.patch("/tournament/:id/toggle-active", tournamentController.toggleTournamentActive);
 
+//formController Routes
+router.get("/instances/:menuItemId", formController.getInstancesByMenuItem);
+router.post("/form", formController.createForm);
+router.put("/form/:id", formController.updateForm);
+router.patch("/form/:id/activate", formController.toggleFormActive);
+router.post("/form-field", formController.createFormField);
+router.post("/form-validation", formController.createValidation);
 
 module.exports = router;
