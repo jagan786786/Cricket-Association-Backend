@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const Player = require('../models/Player.model');
-const Team = require('../models/Team.model');
+const Player = require('../models/player.model');
+const Team = require('../models/team.model');
 
 // Generate JWT
 const generateToken = (id) => {
