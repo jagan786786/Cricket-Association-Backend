@@ -24,7 +24,7 @@ const formSchema = new mongoose.Schema(
       validate: {
         validator: function (v) {
           return !v || /^https?:\/\/.+$/.test(v);
-        },
+        }, 
         message: "Invalid callback URL format",
       },
     },
