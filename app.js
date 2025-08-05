@@ -7,6 +7,7 @@ const cookieParser = require('cookie-parser');
 const connectToDb = require('./db/db');
 const playerRoutes = require('./routes/player.routes');
 const serviceRoutes = require('./routes/service.routes');
+const formSubmissionroutes = require('./routes/formSubmissions.routes')
 
 connectToDb();
 
@@ -21,6 +22,7 @@ app.get('/', (req, res) => {
 
 app.use('/api', playerRoutes);
 app.use('/api',serviceRoutes);
+app.use('/api/submission',formSubmissionroutes);
 
 
 module.exports = app;
