@@ -57,5 +57,6 @@ router.post("/form-field", formController.createFormField);
 router.post("/form-validation", formController.createValidation);
 router.get("/forms", formController.getAllForms);
 router.get("/form/:id", formController.getFormById);
+router.put("/form/:formId/fields", formController.addOrUpdateFormFields);
 
 module.exports = router;

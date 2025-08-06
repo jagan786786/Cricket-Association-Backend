@@ -209,6 +209,7 @@ exports.createValidation = async (req, res) => {
 
 exports.createFormField = async (req, res) => {
   try {
+    console.log(req.body);
     const field = new FormField(req.body);
     const saved = await field.save();
     res.status(201).json(saved);
@@ -252,6 +253,66 @@ exports.getAllForms = async (req, res) => {
     res.json(forms);
   } catch (error) {
     console.error("Fetch All Forms Error:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+
+exports.addOrUpdateFormFields = async (req, res) => {
+  try {
+    const { formId } = req.params;
+    const { fields } = req.body; // Expecting an array of field objects
+
+    if (!Array.isArray(fields)) {
+      return res.status(400).json({ error: "Fields must be an array." });
+    }
+
+    const form = await FormSchema.findById(formId).populate("fields");
+    if (!form) {
+      return res.status(404).json({ error: "Form not found" });
+    }
+
+    const updatedFieldIds = [];
+
+    for (const fieldData of fields) {
+      let field;
+
+      if (fieldData._id) {
+        // Update existing field
+        field = await FormField.findByIdAndUpdate(fieldData._id, fieldData, {
+          new: true,
+          runValidators: true,
+        });
+        if (!field) {
+          return res
+            .status(404)
+            .json({ error: `Field with ID ${fieldData._id} not found` });
+        }
+      } else {
+        // Create new field
+        field = new FormField(fieldData);
+        await field.save();
+      }
+
+      updatedFieldIds.push(field._id);
+    }
+
+    // Merge new/updated fields into form's fields array (avoiding duplicates)
+    const uniqueFieldIds = Array.from(
+      new Set([...form.fields.map((f) => f._id.toString()), ...updatedFieldIds.map((id) => id.toString())])
+    );
+
+    form.fields = uniqueFieldIds;
+    await form.save();
+
+    const updatedForm = await FormSchema.findById(formId).populate("fields");
+
+    res.json({
+      message: "Form fields updated successfully.",
+      form: updatedForm,
+    });
+  } catch (error) {
+    console.error("Add/Update Form Fields Error:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };

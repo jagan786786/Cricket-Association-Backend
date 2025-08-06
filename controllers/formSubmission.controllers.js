@@ -4,7 +4,24 @@ const FormSubmission = require("../models/FormSubmission.model");
 // Handle form submission
 exports.submitForm = async (req, res) => {
   const { formId } = req.params;
-  const formData = req.body;
+
+  let formData;
+
+  try {
+    // Ensure "data" exists
+    if (!req.body.data) {
+      return res
+        .status(400)
+        .json({ message: "`data` field is missing in the form submission." });
+    }
+
+    // Parse JSON payload from the "data" field in FormData
+    formData = JSON.parse(req.body.data);
+  } catch (err) {
+    return res
+      .status(400)
+      .json({ message: "Invalid JSON in `data` field.", error: err.message });
+  }
 
   try {
     // Validate formId
@@ -13,7 +30,22 @@ exports.submitForm = async (req, res) => {
       return res.status(404).json({ message: "Form not found" });
     }
 
-    // Save submission
+    // Handle uploaded files (if any)
+    if (req.files && req.files.length > 0) {
+      req.files.forEach((file) => {
+        if (formData[file.fieldname]) {
+          if (Array.isArray(formData[file.fieldname])) {
+            formData[file.fieldname].push(file.originalname);
+          } else {
+            formData[file.fieldname] = file.originalname;
+          }
+        } else {
+          formData[file.fieldname] = file.originalname;
+        }
+      });
+    }
+
+    // Save to DB
     const submission = new FormSubmission({
       formId,
       data: formData,
