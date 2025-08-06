@@ -5,6 +5,7 @@ const moduleController = require("../controllers/module.controllers");
 const menuItemController = require("../controllers/menuitems.controllers");
 const tournamentController = require('../controllers/tournament.controllers');
 const formController = require("../controllers/formController.controllers");
+const membershipController = require("../controllers/membership.controllers");
 
 
 // Menu Item Routes
@@ -38,6 +39,14 @@ router.get('/tournaments', tournamentController.getAllTournaments);
 router.get('/tournaments/category/:categoryId', tournamentController.getTournamentsByCategory);
 router.get('/tournaments/menuItem/:menuItemId', tournamentController.getTournamentsByMenuItem);
 router.patch("/tournament/:id/toggle-active", tournamentController.toggleTournamentActive);
+
+//Membership routes
+router.post("/membership", membershipController.createMembership);
+router.put("/memberships/:id", membershipController.updateMembership);
+router.delete("/memberships/:id", membershipController.deleteMembership);
+router.get("/memberships", membershipController.getAllMemberships);
+router.get("/memberships/menuitem/:menuItemId", membershipController.getMembershipsByMenuItem);
+router.patch("/memberships/toggle/:id", membershipController.toggleMembershipActive);
 
 //formController Routes
 router.get("/instances/:menuItemId", formController.getInstancesByMenuItem);
